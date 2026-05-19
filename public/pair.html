@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAFADZWA-TKT Pairing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="glass p-8 w-full max-w-md mx-4">
+        <div class="text-center mb-8">
+            <a href="index.html" class="inline-block mb-4 text-blue-400 hover:text-blue-300 transition flex items-center gap-2 justify-center">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+            <h1 class="text-3xl font-bold mb-2">TAFADZWA-TKT</h1>
+            <p class="text-gray-400">Link your WhatsApp account</p>
+        </div>
+
+        <div id="input-section">
+            <div class="mb-6">
+                <label for="number" class="block text-sm font-medium text-gray-400 mb-2">Mobile Number (with country code)</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                        <i class="fas fa-phone"></i>
+                    </span>
+                    <input type="text" id="number" placeholder="263718095555" 
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-blue-500 text-white">
+                </div>
+            </div>
+
+            <button id="get-code" class="w-full btn-primary py-3 rounded-lg font-semibold flex items-center justify-center gap-2">
+                <span>Get Pairing Code</span>
+                <div id="loader" class="loader"></div>
+            </button>
+        </div>
+
+        <div id="code-section" class="hidden text-center">
+            <div class="bg-gray-800 p-6 rounded-xl mb-6">
+                <p class="text-sm text-gray-400 mb-2">Your Pairing Code</p>
+                <div id="pair-code" class="text-4xl font-mono font-bold tracking-widest text-blue-400">------</div>
+            </div>
+            <p class="text-sm text-gray-400 mb-6">
+                Open WhatsApp > Linked Devices > Link a Device > Link with phone number instead.
+            </p>
+            <button onclick="location.reload()" class="text-blue-400 hover:underline">Try another number</button>
+        </div>
+
+        <div id="error-msg" class="mt-4 text-red-400 text-sm text-center hidden"></div>
+    </div>
+
+    <script>
+document.getElementById('get-code').addEventListener('click', async () => {
+    const numberInput = document.getElementById('number');
+    const loader = document.getElementById('loader');
+    const btnText = document.querySelector('#get-code span');
+    const errorMsg = document.getElementById('error-msg');
+    const inputSection = document.getElementById('input-section');
+    const codeSection = document.getElementById('code-section');
+    const pairCodeDisplay = document.getElementById('pair-code');
+
+    const number = numberInput.value.trim().replace(/[^0-9]/g, '');
+
+    if (!number || number.length < 10) {
+        showError('Please enter a valid mobile number with country code.');
+        return;
+    }
+
+    // Reset UI
+    errorMsg.classList.add('hidden');
+    loader.style.display = 'block';
+    btnText.style.opacity = '0.5';
+    document.getElementById('get-code').disabled = true;
+
+    try {
+        // We'll call the bot's internal API
+        // The token is usually the telegram token in this bot's setup
+        // Since this is client-side, we might need a way to get the token or have a public endpoint
+        // For now, we assume the bot's /api/pair is accessible
+        const response = await fetch('/api/pair', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                number: number,
+                token: '8087999115:AAEwDtnN_WqhcwQpEPmEXb-WEcW0v48zZNs', // Hardcoded as per settings.js
+                requestedBy: 'Web User'
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            pairCodeDisplay.textContent = data.pairCode;
+            inputSection.classList.add('hidden');
+            codeSection.classList.remove('hidden');
+        } else {
+            showError(data.error || 'Failed to get pairing code.');
+        }
+    } catch (err) {
+        showError('Connection error. Please make sure the bot is running.');
+        console.error(err);
+    } finally {
+        loader.style.display = 'none';
+        btnText.style.opacity = '1';
+        document.getElementById('get-code').disabled = false;
+    }
+});
+
+function showError(msg) {
+    const errorMsg = document.getElementById('error-msg');
+    errorMsg.textContent = msg;
+    errorMsg.classList.remove('hidden');
+}
+
+</script>
+</body>
+</html>
