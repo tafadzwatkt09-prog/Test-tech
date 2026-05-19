@@ -1,0 +1,14 @@
+[build]
+  publish = "public"
+
+# Serve pair.html directly at /pair (clean URL)
+[[redirects]]
+  from = "/pair"
+  to = "/pair.html"
+  status = 200
+
+# Do NOT catch .html or .js files — only catch unknown routes
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 404
