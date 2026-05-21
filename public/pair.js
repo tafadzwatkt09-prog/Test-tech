@@ -32,7 +32,7 @@ document.getElementById('get-code').addEventListener('click', async () => {
             },
             body: JSON.stringify({
                 number: number,
-                token: '8087999115:AAEwDtnN_WqhcwQpEPmEXb-WEcW0v48zZNs', // Hardcoded as per settings.js
+                token: '', // Hardcoded as per settings.js
                 requestedBy: 'Web User'
             })
         });
